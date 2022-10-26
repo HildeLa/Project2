@@ -21,7 +21,7 @@ def cost_func(beta):
 seed = np.random.seed(12345)
 
 n = 100
-x = np.random.rand(n,1)
+x = np.random.randint(1,100,n).reshape(1,-1)
 y = create_data(x)
 
 X = create_X(x)
