@@ -33,52 +33,50 @@ X = create_X(x)
 #scaler.fit(X)
 #X = scaler.transform(X)
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.3)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.3) #Splitter dataene
 
 XT_X = X.T @ X #Identity matrix?
 H = (2.0/n)* XT_X
-EigValues, EigVectors = np.linalg.eig(H)
+EigValues, EigVectors = np.linalg.eig(H) #To get eigenvalues
 eta = 1.0/np.max(EigValues)
 
-learn_rates =  np.geomspace(0.0001, 0.1, 10, endpoint = True)
-epoch_range = np.geomspace(10, 1000, 10, endpoint = True)
+learn_rates =  np.geomspace(0.0001, 0.1, 10, endpoint = True) # this is ineffective,
+epoch_range = np.geomspace(10, 1000, 10, endpoint = True)#but the thought is to be able to plot this
 
 
-def batches(l, n):
-    for i in range(0, len(l), n):
-        yield l[i:i+n]
-
-for rate in learn_rates:
-    for range in epoch_range:
-        model = SGDRegressor(max_iter=10000,eta0=rate,fit_intercept=False)
-        mse_train= []
-        mse_test= []
-        epochs = np.arange(1, range+1)
-        n_batch = 10
-        batches = np.split(X_train, n_batch, axis=0)
-        for epoch in epochs:
-            batch_i= 0
-            for b, batch in enumerate(batches):
-                y_batch = y_train[batch_i:batch_i+int(len(y_train)/n_batch)]
-                try:
-                    model.partial_fit(batch, y_batch)
-                    batch_i += n_batch
-                except ValueError:
-                    print('for some reason y_batch is now ', len(y_batch))
-                    print('while x-batch ', len(x_batch))
-                    pass
+for rate in learn_rates: # looping through the learning rates I want to test
+    print(f'Results for learning rate {rate}:\n')
+    for range in epoch_range: # for each learning rate, I test each epoch lenght
+        model = SGDRegressor(max_iter=10000,eta0=rate,fit_intercept=False) #Scikit learn Stocastic gradient descent regression
+        #fit intercept is false because of the 1 in the feature matrix
+        mse_train= [] # to be filled with train and test mses
+        mse_test= [] #Planning to exchange with a matrix defined outside of loop for plotting all MSEs for each rate and epoch size
+        epochs = np.arange(1, range+1) #making a list for looping through
+        n_batch = 10 #I use 10 batches in each epoch
+        batches = np.split(X_train, n_batch, axis=0) #Splitting the training data into the batches
+        ybatches = np.split(y_train, n_batch, axis=0)
+        batch_i= 0
+        for b, batch in enumerate(batches): #getting index to get the right y-batch
+            y_batch = ybatches[b]
+            try:
+                model.partial_fit(batch, y_batch)
+                batch_i += n_batch
+            except ValueError: #An error that occured, perhaps not anymore
+                print('for some reason y_batch is now ', len(y_batch))
+                print('while x-batch ', len(x_batch))
+                pass
 
             y_pred_test = model.predict(X_test)
             y_pred_train = model.predict(X_train)
             mse_train.append(MSE(y_train, y_pred_train))
             mse_test.append(MSE(y_test, y_pred_test))
 
-        print('Coefficients: ', model.coef_)
-
-fig, ax = plt.subplots()
-ax.plot(epochs, mse_test, label = 'mse test')
-ax.plot(epochs, mse_train, label = 'mse train')
-plt.xlabel('epoch')
-plt.ylabel('MSE scores')
-plt.legend()
-plt.show()
+        print('Coefficients: ', model.coef_) #printing coefficients for each epoch epoch_range
+        #Now, there is something weird
+    #fig, ax = plt.subplots()
+    #ax.plot(epochs, mse_test, label = 'mse test')
+    #ax.plot(epochs, mse_train, label = 'mse train')
+    #plt.xlabel('epoch')
+    #plt.ylabel('MSE scores')
+    #plt.legend()
+    #plt.show()
