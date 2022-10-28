@@ -1,17 +1,17 @@
 '''
-Solving task a using scikit learn
+Task A with Scikit Learn
 '''
+import random
+import numpy as np
+import pandas as pd
+import seaborn as sns
 from sklearn.linear_model import SGDRegressor
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline
 from sklearn.model_selection import train_test_split
 from matplotlib import pyplot as plt
-import random
-import numpy as np
-import pandas as pd
-from matplotlib import cm
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.ticker import LinearLocator, FormatStrFormatter
+
+sns.set_theme()
 
 seed = np.random.seed(1404)
 
@@ -55,7 +55,7 @@ EigValues, EigVectors = np.linalg.eig(H) #To get eigenvalues
 eta = 1.0/np.max(EigValues)
 
 learn_rates = [eta] #np.geomspace(0.0001, 0.1, 10, endpoint = True) # this is ineffective,
-epoch_range = np.arange(100,1000,100)#but the thought is to be able to plot this
+epoch_range = np.arange(100,1000,100)#In the plot this is set to np.arange(10,1000,10)
 
 lambdas = [1, 0.1,0.01,0.001,0.0001, 0]
 plotting_dict = {'epoch_range':[],'learning_rate':[],'lambdas':[],'MSEtrain':[], 'MSEtest':[]}
@@ -73,7 +73,7 @@ for lamb in lambdas:
             plotting_dict['lambdas'].append(lamb)
             plotting_dict['epoch_range'].append(ep)
             plotting_dict['learning_rate'].append(rate)
-            n_batch = 10 #I use 10 batches in each epoch
+            n_batch = 50 #I use 10 batches in each epoch
             batches = np.split(X_train, n_batch, axis=0) #Splitting the training data into the batches
             ybatches = np.split(y_train, n_batch, axis=0)
             batch_i= 0
@@ -99,34 +99,27 @@ for lamb in lambdas:
 df = pd.DataFrame(plotting_dict)
 #print(df)
 
+#Subsetting data for plotting
+lambda1 = df.loc[df['lambdas']==1]
 lambda01 = df.loc[df['lambdas']==0.1]
+lambda001 = df.loc[df['lambdas']==0.01]
 lambda0 = df.loc[df['lambdas']==0]
 
+#plotting
 fig, ax = plt.subplots()
-ax.plot(lambda01['epoch_range'],lambda01['MSEtest'], label = 'MSE test 0.1')
-ax.plot(lambda0['epoch_range'],lambda0['MSEtest'], label = 'MSE test 0')
+#ax.plot(lambda1['epoch_range'],lambda1['MSEtest'], label = 'MSE test 1 lambda')
+ax.plot(lambda01['epoch_range'],lambda01['MSEtest'], label = 'MSE test 0.1 lambda')
+ax.plot(lambda001['epoch_range'],lambda001['MSEtest'], label = 'MSE test 0.01 lambda')
+ax.plot(lambda0['epoch_range'],lambda0['MSEtest'], label = 'MSE test OLS')
 ax.set_xlabel('epochs')
 ax.set_ylabel('MSE score')
 plt.legend()
+plt.savefig('MSE_epochs_lambdas_batch50.png', bbox_inches='tight')
 plt.show()
 
-
-
-#Plotting
 '''
-plot_X, plot_y = np.meshgrid(learn_rates, epoch_range)
-A = np.array(plotting_dict['MSEtest'])
-plot_z = np.reshape(A, (-1, len(learn_rates)))
-
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
-ax.set_zlabel('MSE score')
-
-surf = ax.plot_surface(plot_X, plot_y, plot_z,
-    cmap=cm.coolwarm,linewidth=0, antialiased=False)
-
-plt.xlabel('Learning rate')
-plt.ylabel('epoch lenghts')
-
-plt.show()
+Looking at the plot, MSE_epoch_lambda0and01, the lambda set to 0 represents an OLS,
+while the 0.1 is a ridge regression with 0.1 weight. In this case, the two models
+seem to have similar effect with the epochs used and a learning rate set to 1 over
+the largest eigenvalue of the hessian matrix.
 '''
