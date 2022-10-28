@@ -34,3 +34,4 @@ print(MSE(y_test,y_preds))
 
 
 print(regr.score(X_test, y_test))
+#score(X, y[, sample_weight])Return the coefficient of determination of the prediction.
