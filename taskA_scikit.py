@@ -120,7 +120,7 @@ sns.set_theme()
 fig2, ax2 = plt.subplots()
 h_df = df[['epoch_range', 'lambdas', 'MSEtrain']]
 h_df = h_df.pivot('epoch_range', 'lambdas', 'MSEtrain')
-sns.heatmap(h_df)
+sns.heatmap(h_df,cmap="YlGnBu")
 
 
 '''
